@@ -1,17 +1,24 @@
 const express = require("express");
 const Job = require("../../../models/JobSchema/jobschema");
+const ApplyJob = require("../../../models/JobSchema/applyjob");
 const authMiddleware = require("../../Authentication/authmiddleware");
 const jobRouter = express.Router();
 
 jobRouter.post("/jobs", authMiddleware, async (req, res) => {
   try {
-    const { title, description, status, recruiterId } = req.body;
-
+    const { title, description, status, recruiterId, skills, company } =
+      req.body;
     if (!recruiterId) {
       return res.status(400).json({ message: "Recruiter ID is required" });
     }
-
-    const job = new Job({ title, description, status, recruiterId });
+    const job = new Job({
+      title,
+      description,
+      status,
+      recruiterId,
+      skills,
+      company,
+    });
     await job.save();
 
     res.status(201).json({ message: "Job created successfully", job });
@@ -77,6 +84,41 @@ jobRouter.delete("/jobs/:id", authMiddleware, async (req, res) => {
     res.status(200).json({ message: "Job deleted successfully" });
   } catch (error) {
     res.status(500).json({ message: "Error deleting job", error });
+  }
+});
+
+jobRouter.post("/apply", async (req, res) => {
+  try {
+    const {
+      firstName,
+      lastName,
+      email,
+      phone,
+      resumeUrl,
+      coverLetter,
+      jobTitle,
+      company,
+      recruiterId,
+    } = req.body;
+
+    const application = new ApplyJob({
+      firstName,
+      lastName,
+      email,
+      phone,
+      resumeUrl,
+      coverLetter,
+      jobTitle,
+      company,
+      recruiterId,
+    });
+
+    await application.save();
+    res
+      .status(201)
+      .json({ message: "Application submitted successfully", application });
+  } catch (error) {
+    console.log(error);
   }
 });
 
